@@ -25,7 +25,9 @@ func init() {
 	flags.BoolVarP(&ignoreEmpty, "ignore-empty", "i", ignoreEmpty, "ignore empty lines")
 	flags.IntVarP(&limit, "limit", "n", limit, "number of field to separate")
 
-	carapace.Gen(Command)
+	if slices.Contains(os.Args, "_carapace") {
+		carapace.Gen(Command)
+	}
 }
 
 // Command is root command
