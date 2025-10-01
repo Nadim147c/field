@@ -17,8 +17,6 @@ from stream of text.
 
 ## Installation
 
-### GO Install
-
 ### From source
 
 Clone and build:
