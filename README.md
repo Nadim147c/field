@@ -56,7 +56,7 @@ cat /etc/passwd | field -i -d: 1
 ps aux | field -n11 11
 
 # Extract multiple fields (user and PID) and print them
-ps aux | field 1 2
+ps aux | field 1 2:3
 ```
 
 ---
