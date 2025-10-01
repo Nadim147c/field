@@ -28,6 +28,3 @@ install:
 lint:
 	$(GO) test -v ./...
 	$(REVIVE) -config revive.toml -formatter friendly ./...
-
-docs-dev:
-	bun run dev
