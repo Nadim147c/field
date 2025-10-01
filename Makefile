@@ -18,12 +18,9 @@ build:
 install:
 	install -Dm755 $(BIN_NAME) "$(BIN_FILE)"
 	install -Dm644 LICENSE "$(LICENSE_FILE)"
-	# Install completions
-	mkdir -p "$(BASH_COMPLETION_DIR)" "$(ZSH_COMPLETION_DIR)" "$(FISH_COMPLETION_DIR)"
-	$(BIN_NAME) _carapace bash > "$(BASH_COMPLETION_DIR)/$(BIN_NAME)"
-	$(BIN_NAME) _carapace zsh  > "$(ZSH_COMPLETION_DIR)/_$(BIN_NAME)"
-	$(BIN_NAME) _carapace fish > "$(FISH_COMPLETION_DIR)/$(BIN_NAME).fish"
-	@echo "Completions installed for bash, zsh, and fish."
+	$(BIN_NAME) _carapace bash | install -Dm644 /dev/stdin "$(BASH_COMPLETION_DIR)/$(BIN_NAME)"
+	$(BIN_NAME) _carapace zsh  | install -Dm644 /dev/stdin "$(ZSH_COMPLETION_DIR)/_$(BIN_NAME)"
+	$(BIN_NAME) _carapace fish | install -Dm644 /dev/stdin "$(FISH_COMPLETION_DIR)/$(BIN_NAME).fish"
 
 lint:
 	$(GO) test -v ./...
