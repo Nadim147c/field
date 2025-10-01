@@ -59,11 +59,9 @@ ps aux | field -n11 11
 ps aux | field 1 2:3
 ```
 
----
-
 ## Shell Completion
 
-`field` supports shell completions via [Carapace](https://github.com/rsteube/carapace):
+`field` supports shell completions via [Carapace](https://github.com/carapace-sh/carapace):
 
 ```bash
 # Bash
