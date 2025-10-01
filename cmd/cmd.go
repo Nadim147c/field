@@ -16,14 +16,15 @@ import (
 var (
 	delimiter   = "space"
 	ignoreEmpty = false
-	limit       = math.MaxInt
 )
+
+var limit limitValue = math.MaxInt
 
 func init() {
 	flags := Command.Flags()
 	flags.StringVarP(&delimiter, "delimiter", "d", delimiter, "delimiter for field separation")
 	flags.BoolVarP(&ignoreEmpty, "ignore-empty", "i", ignoreEmpty, "ignore empty lines")
-	flags.IntVarP(&limit, "limit", "n", limit, "number of field to separate")
+	flags.VarP(&limit, "limit", "n", "number of field to separate")
 
 	if slices.Contains(os.Args, "_carapace") {
 		carapace.Gen(Command)
@@ -63,9 +64,9 @@ ps aux | field 1 2
 			line := scanner.Text()
 			var fields []string
 			if cmd.Flags().Changed("delimiter") {
-				fields = FieldN(line, delimiter, limit)
+				fields = FieldN(line, delimiter, limit.Int())
 			} else {
-				fields = FieldNPred(line, unicode.IsSpace, limit)
+				fields = FieldNPred(line, unicode.IsSpace, limit.Int())
 			}
 
 			selected := make([]string, 0, 10)
