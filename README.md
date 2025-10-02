@@ -34,7 +34,6 @@ This will:
 
 - Build the binary (`field`)
 - Install the binary to `~/.local/bin` (or `$PREFIX/bin`)
-- Install the LICENSE file
 - Install shell completions for Bash, Zsh, and Fish
 
 ## Usage
