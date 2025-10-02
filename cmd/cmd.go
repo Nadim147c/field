@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"math"
 	"os"
 	"slices"
@@ -10,11 +11,14 @@ import (
 	"unicode"
 
 	"github.com/carapace-sh/carapace"
+	shlex "github.com/carapace-sh/carapace-shlex"
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 )
 
 var (
 	delimiter   = "space"
+	shell       = false
 	ignoreEmpty = false
 )
 
@@ -22,12 +26,16 @@ var limit limitValue = math.MaxInt
 
 func init() {
 	flags := Command.Flags()
-	flags.StringVarP(&delimiter, "delimiter", "d", delimiter, "delimiter for field separation")
 	flags.BoolVarP(&ignoreEmpty, "ignore-empty", "i", ignoreEmpty, "ignore empty lines")
+	flags.BoolVarP(&shell, "shlex", "s", ignoreEmpty, "spilt qoute like shells")
+	flags.StringVarP(&delimiter, "delimiter", "d", delimiter, "delimiter for field separation")
 	flags.VarP(&limit, "limit", "n", "number of field to separate")
 
 	if slices.Contains(os.Args, "_carapace") {
 		carapace.Gen(Command)
+	} else {
+		handler := slog.New(log.New(os.Stderr))
+		slog.SetDefault(handler)
 	}
 }
 
@@ -47,6 +55,9 @@ ps aux | field -n11 11
 
 # Extract multiple fields (user and PID) and print them
 ps aux | field 1 2
+
+# Extract a directory and get all the deleted files
+rm -vrf bad-directory | field -s -- -1
 `,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -62,8 +73,16 @@ ps aux | field 1 2
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			line := scanner.Text()
+
 			var fields []string
-			if cmd.Flags().Changed("delimiter") {
+			if shell {
+				s, err := shlex.Split(line)
+				if err != nil {
+					slog.Error("Failed to parse qouted field", "error", err)
+					continue
+				}
+				fields = s.Strings()
+			} else if cmd.Flags().Changed("delimiter") {
 				fields = FieldN(line, delimiter, limit.Int())
 			} else {
 				fields = FieldNPred(line, unicode.IsSpace, limit.Int())
