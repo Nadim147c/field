@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log/slog"
 	"math"
 	"os"
@@ -14,12 +15,14 @@ import (
 	shlex "github.com/carapace-sh/carapace-shlex"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
+	"github.com/valyala/fasttemplate"
 )
 
 var (
 	delimiter   = "space"
-	shell       = false
+	format      = "none"
 	ignoreEmpty = false
+	shell       = false
 )
 
 var limit limitValue = math.MaxInt
@@ -29,6 +32,7 @@ func init() {
 	flags.BoolVarP(&ignoreEmpty, "ignore-empty", "i", ignoreEmpty, "ignore empty lines")
 	flags.BoolVarP(&shell, "shlex", "s", ignoreEmpty, "spilt qoute like shells")
 	flags.StringVarP(&delimiter, "delimiter", "d", delimiter, "delimiter for field separation")
+	flags.StringVarP(&format, "format", "f", format, "field printing format")
 	flags.VarP(&limit, "limit", "n", "number of field to separate")
 
 	if slices.Contains(os.Args, "_carapace") {
@@ -36,6 +40,16 @@ func init() {
 	} else {
 		handler := slog.New(log.New(os.Stderr))
 		slog.SetDefault(handler)
+	}
+}
+
+// MinimumNArgs returns an error if there is not at least N args.
+func MinimumNArgs(n int) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if !cmd.Flags().Changed("format") && len(args) < n {
+			return fmt.Errorf("requires at least %d arg(s), only received %d", n, len(args))
+		}
+		return nil
 	}
 }
 
@@ -51,7 +65,10 @@ ps aux | grep bad-process | field 2 | xargs kill
 cat /etc/passwd | field -i -d: 1
 
 # Show just the command (limit number of field 11) from ps output
-ps aux | field -n11 11
+ps aux | field -n 11 11
+
+# Shows the PID and the command from ps command with <PID>:<COMMAND> format
+ps aux | field -n 11 -f "{2}:{11}"
 
 # Extract multiple fields (user and PID) and print them
 ps aux | field 1 2
@@ -59,8 +76,19 @@ ps aux | field 1 2
 # Extract a directory and get all the deleted files
 rm -vrf bad-directory | field -s -- -1
 `,
-	Args: cobra.MinimumNArgs(1),
+	Args: MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var template *fasttemplate.Template
+		var writter *bufio.Writer
+		if cmd.Flags().Changed("format") {
+			t, err := fasttemplate.NewTemplate(format, "{", "}")
+			if err != nil {
+				return err
+			}
+			template = t
+			writter = bufio.NewWriter(os.Stdout)
+		}
+
 		ranges := make([]*Range, len(args))
 		for i, a := range args {
 			r, err := ParseRange(a, false)
@@ -93,11 +121,35 @@ rm -vrf bad-directory | field -s -- -1
 				selected = append(selected, r.Select(fields)...)
 			}
 
-			if ignoreEmpty && len(selected) == 0 {
+			if template == nil {
+				if ignoreEmpty && len(selected) == 0 {
+					continue
+				}
+				fmt.Println(strings.Join(selected, " "))
 				continue
 			}
 
-			fmt.Println(strings.Join(selected, " "))
+			selector := func(w io.Writer, tag string) (int, error) {
+				r, err := ParseRange(tag, false)
+				if err != nil {
+					return 0, err
+				}
+				return fmt.Fprint(w, strings.Join(r.Select(fields), " "))
+			}
+
+			if _, err := template.ExecuteFunc(writter, selector); err != nil {
+				slog.Error("Failed execute format template", "error", err)
+				continue
+			}
+
+			if _, err := writter.WriteString("\n"); err != nil {
+				slog.Error("Failed execute format template", "error", err)
+				continue
+			}
+
+			if err := writter.Flush(); err != nil {
+				return err
+			}
 		}
 
 		return scanner.Err()
