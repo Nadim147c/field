@@ -5,6 +5,9 @@
 [![GitHub License](https://img.shields.io/github/license/Nadim147c/field?style=for-the-badge&logo=gplv3&labelColor=11140F&color=BBE9AA)](./LICENSE)
 [![GitHub Tag](https://img.shields.io/github/v/tag/Nadim147c/field?include_prereleases&sort=semver&style=for-the-badge&logo=git&labelColor=11140F&color=BBE9AA)](https://github.com/Nadim147c/field/tags)
 
+> [!IMPORTANT]
+> 🔥 Found this useful? A quick star goes a long way.
+
 `field` is a easy, elegant, ~minimal~ and flexible way to parse and access fields
 from stream of text.
 
