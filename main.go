@@ -5,9 +5,9 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/Nadim147c/fang"
 	"github.com/Nadim147c/field/cmd"
 	"github.com/Nadim147c/theme"
-	"github.com/charmbracelet/fang"
 )
 
 var Version = ""
