@@ -22,6 +22,6 @@ install:
 	$(BIN_NAME) _carapace zsh  | install -Dm644 /dev/stdin "$(ZSH_COMPLETION_DIR)/_$(BIN_NAME)"
 	$(BIN_NAME) _carapace fish | install -Dm644 /dev/stdin "$(FISH_COMPLETION_DIR)/$(BIN_NAME).fish"
 
-lint:
+test:
 	$(GO) test -v ./...
 	$(REVIVE) -config revive.toml -formatter friendly ./...
