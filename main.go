@@ -7,7 +7,6 @@ import (
 
 	"github.com/Nadim147c/fang"
 	"github.com/Nadim147c/field/cmd"
-	"github.com/Nadim147c/theme"
 )
 
 var Version = ""
@@ -16,7 +15,6 @@ func main() {
 	err := fang.Execute(
 		context.Background(),
 		cmd.Command,
-		fang.WithColorSchemeFunc(theme.FangTheme),
 		fang.WithNotifySignal(os.Interrupt, os.Kill, syscall.SIGINT, syscall.SIGTERM),
 		fang.WithVersion(Version),
 		fang.WithoutCompletions(),

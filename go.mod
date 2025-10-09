@@ -4,7 +4,6 @@ go 1.25.0
 
 require (
 	github.com/Nadim147c/fang v0.4.4-0.20251004092645-61f7565b973f
-	github.com/Nadim147c/theme v0.0.1-alpha.1.0.20251004092928-4d59d9a2f653
 	github.com/carapace-sh/carapace v1.9.0
 	github.com/carapace-sh/carapace-shlex v1.1.0
 	github.com/charmbracelet/log v0.4.2

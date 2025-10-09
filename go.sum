@@ -1,7 +1,5 @@
 github.com/Nadim147c/fang v0.4.4-0.20251004092645-61f7565b973f h1:o1hJUcNLFa6beV0qK2mT1Rl2WQDY8vfuuRfOqfcZ+HY=
 github.com/Nadim147c/fang v0.4.4-0.20251004092645-61f7565b973f/go.mod h1:dRy4C4H/sC0GXcAkrVos3ppWn/YNX3KJNU8mcCcGP0U=
-github.com/Nadim147c/theme v0.0.1-alpha.1.0.20251004092928-4d59d9a2f653 h1:tY4pN2857x4VimmMlOPF4U0CLn5DEF6HgDff8xvrvlU=
-github.com/Nadim147c/theme v0.0.1-alpha.1.0.20251004092928-4d59d9a2f653/go.mod h1:GNq2Eg/1n0RGkKeLwpSsKPepMdcEUaV2wrwXqKmtv9k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/aymanbagabas/go-udiff v0.2.0 h1:TK0fH4MteXUDspT88n8CKzvK0X9O2xu9yQjWpi6yML8=
