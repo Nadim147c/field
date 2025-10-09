@@ -11,6 +11,8 @@
 `field` is a easy, elegant, ~minimal~ and flexible way to parse and access fields
 from stream of text.
 
+![Made with VHS](https://vhs.charm.sh/vhs-18AOVv7alBxt36JtlnV0h2.gif)
+
 ## Features
 
 - Extract specific fields from each input line.
