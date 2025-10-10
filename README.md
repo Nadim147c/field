@@ -20,7 +20,6 @@ from stream of text.
 - Option to ignore empty lines.
 - Limit the number of fields processed.
 - Support multiple field selections.
-- Auto-completion for Bash, Zsh, and Fish shells.
 
 ## Installation
 
@@ -47,37 +46,6 @@ This will:
 
 ```bash
 field [flags] ...<range>
-```
-
-### Examples
-
-```bash
-# Extract the second field from ps output (PID) and kill those processes
-ps aux | grep bad-process | field 2 | xargs kill
-
-# Print only the usernames (first field) from /etc/passwd and ignore empty lines
-cat /etc/passwd | field -i -d: 1
-
-# Show just the command (limit number of field 11) from ps output
-ps aux | field -n11 11
-
-# Extract multiple fields (user and PID) and print them
-ps aux | field 1 2:3
-```
-
-## Shell Completion
-
-`field` supports shell completions via [Carapace](https://github.com/carapace-sh/carapace):
-
-```bash
-# Bash
-source <(field _carapace bash)
-
-# Zsh
-source <(field _carapace zsh)
-
-# Fish
-field _carapace fish | source
 ```
 
 ## Contributing
