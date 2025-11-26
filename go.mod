@@ -3,7 +3,7 @@ module github.com/Nadim147c/field
 go 1.25.0
 
 require (
-	github.com/Nadim147c/fang v0.4.4-0.20251004092645-61f7565b973f
+	github.com/Nadim147c/fang v0.4.4-0.20251017121346-07509bb205ab
 	github.com/carapace-sh/carapace v1.9.0
 	github.com/carapace-sh/carapace-shlex v1.1.0
 	github.com/charmbracelet/log v0.4.2

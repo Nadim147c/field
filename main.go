@@ -15,11 +15,12 @@ func main() {
 	err := fang.Execute(
 		context.Background(),
 		cmd.Command,
+		fang.WithFlagTypes(),
 		fang.WithNotifySignal(os.Interrupt, os.Kill, syscall.SIGINT, syscall.SIGTERM),
 		fang.WithVersion(Version),
 		fang.WithoutCompletions(),
 		fang.WithoutManpage(),
-		fang.WithFlagTypes(),
+		fang.WithShorthandPadding(),
 	)
 	if err != nil {
 		os.Exit(1)
