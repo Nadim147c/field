@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -29,9 +31,13 @@ var limit limitValue = math.MaxInt
 
 func init() {
 	flags := Command.Flags()
-	flags.BoolVarP(&ignoreEmpty, "ignore-empty", "i", ignoreEmpty, "ignore empty lines")
+	flags.BoolVarP(&ignoreEmpty,
+		"ignore-empty", "i", ignoreEmpty, "ignore empty lines",
+	)
 	flags.BoolVarP(&shell, "shlex", "s", ignoreEmpty, "spilt qoute like shells")
-	flags.StringVarP(&delimiter, "delimiter", "d", delimiter, "delimiter for field separation")
+	flags.StringVarP(&delimiter,
+		"delimiter", "d", delimiter, "delimiter for field separation",
+	)
 	flags.StringVarP(&format, "format", "f", format, "field printing format")
 	flags.VarP(&limit, "limit", "n", "number of field to separate")
 
@@ -47,7 +53,9 @@ func init() {
 func MinimumNArgs(n int) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
 		if !cmd.Flags().Changed("format") && len(args) < n {
-			return fmt.Errorf("requires at least %d arg(s), only received %d", n, len(args))
+			return fmt.Errorf(
+				"requires at least %d arg(s), only received %d", n, len(args),
+			)
 		}
 		return nil
 	}
@@ -98,22 +106,43 @@ rm -vrf bad-directory | field -s -- -1
 			ranges[i] = r
 		}
 
-		scanner := bufio.NewScanner(os.Stdin)
-		for scanner.Scan() {
-			line := scanner.Text()
+		const size = 16777216 // 16MiB
+		reader := bufio.NewReader(os.Stdin)
+
+		buf := bytes.NewBuffer(nil)
+
+		for {
+			b, prefixed, err := reader.ReadLine()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break
+				}
+				return err
+			}
+
+			if prefixed {
+				if buf.Len() > size {
+					return errors.New("line is too big")
+				}
+				buf.Write(b)
+				continue
+			}
+
+			b = buf.Bytes()
+			buf.Reset()
 
 			var fields []string
 			if shell {
-				s, err := shlex.Split(line)
+				s, err := shlex.Split(string(b))
 				if err != nil {
 					slog.Error("Failed to parse qouted field", "error", err)
 					continue
 				}
 				fields = s.Strings()
 			} else if cmd.Flags().Changed("delimiter") {
-				fields = FieldN(line, delimiter, limit.Int())
+				fields = FieldN(b, delimiter, limit.Int())
 			} else {
-				fields = FieldNPred(line, unicode.IsSpace, limit.Int())
+				fields = FieldNPred(b, unicode.IsSpace, limit.Int())
 			}
 
 			selected := make([]string, 0, 10)
@@ -152,6 +181,6 @@ rm -vrf bad-directory | field -s -- -1
 			}
 		}
 
-		return scanner.Err()
+		return nil
 	},
 }
