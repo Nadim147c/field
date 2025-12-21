@@ -52,7 +52,7 @@ func TestFieldN(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := FieldN(tt.input, tt.delimiter, tt.limit)
+			got := FieldN([]byte(tt.input), tt.delimiter, tt.limit)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FieldN(%q, %q, %d) = %q, want %q",
 					tt.input, tt.delimiter, tt.limit, got, tt.want)
