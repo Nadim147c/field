@@ -9,6 +9,5 @@ pkgs.mkShell {
     golines
     gopls
     revive
-    waybar
   ];
 }
