@@ -3,3 +3,4 @@ Makefile.local
 .direnv
 *.test
 testdata/corpus/
+result
