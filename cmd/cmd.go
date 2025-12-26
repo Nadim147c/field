@@ -142,7 +142,7 @@ rm -vrf bad-directory | field -s -- -1
 			} else if cmd.Flags().Changed("delimiter") {
 				fields = FieldN(b, delimiter, limit.Int())
 			} else {
-				fields = FieldNPred(b, unicode.IsSpace, limit.Int())
+				fields = FieldNFunc(b, unicode.IsSpace, limit.Int())
 			}
 
 			selected := make([]string, 0, 10)

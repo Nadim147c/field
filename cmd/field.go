@@ -18,34 +18,35 @@ func FieldN(s []byte, delimiter string, n int) []string {
 	}
 
 	size := len(s)
-	d := len(delimiter)
+	delimSize := len(delimiter)
+	delim := []byte(delimiter)
 	result := make([]string, 0, minResultSize)
 
 	start := 0
 	found := 0
 
-	delim := []byte(delimiter)
-
-	for i := 0; i+d <= size; {
-		if bytes.HasPrefix(s[i:], delim) {
-			if start < i {
-				result = append(result, string(s[start:i]))
-				found++
-			}
-			i += d
-			for i+d <= size && bytes.HasPrefix(s[i:], delim) {
-				i += d
-			}
-
-			if n > 0 && found+1 == n {
-				result = append(result, string(s[i:]))
-				return result
-			}
-
-			start = i
-		} else {
+	for i := 0; i+delimSize <= size; {
+		if !bytes.HasPrefix(s[i:], delim) {
 			i++
+			continue
 		}
+
+		if start < i {
+			result = append(result, string(s[start:i]))
+			found++
+		}
+
+		i += delimSize
+		for i+delimSize <= size && bytes.HasPrefix(s[i:], delim) {
+			i += delimSize
+		}
+
+		if n > 0 && found+1 == n {
+			result = append(result, string(s[i:]))
+			return result
+		}
+
+		start = i
 	}
 
 	if start < size {
@@ -59,11 +60,11 @@ func FieldN(s []byte, delimiter string, n int) []string {
 // separator.
 type Pred func(rune) bool
 
-// FieldNPred splits s into at most n fields, separated by runes
-// where pred(r) == true. If n < 0, it returns all fields.
-// Consecutive separators are treated as one (like strings.Fields).
-func FieldNPred(s []byte, pred Pred, n int) []string {
-	if len(s) == 0 || delimiter == "" {
+// FieldNFunc splits s into at most n fields, separated by runes where pred(r)
+// == true. If n < 0, it returns all fields. Consecutive separators are treated
+// as one (like strings.Fields).
+func FieldNFunc(s []byte, pred Pred, n int) []string {
+	if len(s) == 0 || pred == nil {
 		return nil
 	}
 	if n == 1 {
@@ -76,29 +77,31 @@ func FieldNPred(s []byte, pred Pred, n int) []string {
 
 	for i := 0; i < len(s); {
 		r, size := utf8.DecodeRune(s[i:])
-		if pred(r) {
-			if start < i {
-				result = append(result, string(s[start:i]))
-				found++
-			}
+		if !pred(r) {
 			i += size
-			// skip consecutive separators
-			for i < len(s) {
-				r2, sz2 := utf8.DecodeRune(s[i:])
-				if !pred(r2) {
-					break
-				}
-				i += sz2
-			}
-
-			if n > 0 && found+1 == n {
-				result = append(result, string(s[i:]))
-				return result
-			}
-			start = i
-		} else {
-			i += size
+			continue
 		}
+
+		if start < i {
+			result = append(result, string(s[start:i]))
+			found++
+		}
+
+		i += size
+		// skip consecutive separators
+		for i < len(s) {
+			r2, sz2 := utf8.DecodeRune(s[i:])
+			if !pred(r2) {
+				break
+			}
+			i += sz2
+		}
+
+		if n > 0 && i < size-1 && found+1 == n {
+			result = append(result, string(s[i:]))
+			return result
+		}
+		start = i
 	}
 
 	if start < len(s) {

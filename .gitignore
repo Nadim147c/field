@@ -1,3 +1,5 @@
 field
 Makefile.local
 .direnv
+*.test
+testdata/corpus/

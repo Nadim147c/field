@@ -32,3 +32,10 @@ uninstall:
 test:
 	$(GO) test -v ./...
 	$(REVIVE) -config revive.toml -formatter friendly ./...
+
+fuzz:
+	# adjust the time here
+	$(GO) test -fuzztime=60s -fuzz=^FuzzFieldN$$ ./cmd
+	$(GO) test -fuzztime=60s -fuzz=^FuzzFieldNFunc$$ ./cmd
+	$(GO) test -fuzztime=60s -fuzz=^FuzzFieldNFunc_Stdlib$$ ./cmd
+	# TODO: add fuzz test with awk!
