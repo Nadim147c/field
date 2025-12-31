@@ -2,7 +2,7 @@ GO       ?= go
 REVIVE   ?= revive
 BIN_NAME ?= field
 VERSION  ?= $(shell git describe --tags)
-PREFIX   ?= /usr/local/
+PREFIX   ?= $(shell echo ~/.local)
 
 BIN_FILE        = $(shell realpath -m "$(PREFIX)/bin/$(BIN_NAME)")
 LICENSE_DIR     = $(shell realpath -m "$(PREFIX)/share/licenses/$(BIN_NAME)")

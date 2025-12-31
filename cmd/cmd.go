@@ -10,7 +10,6 @@ import (
 	"math"
 	"os"
 	"slices"
-	"strings"
 	"unicode"
 
 	"github.com/carapace-sh/carapace"
@@ -86,15 +85,15 @@ rm -vrf bad-directory | field -s -- -1
 `,
 	Args: MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		writter := bufio.NewWriter(os.Stdout)
+
 		var template *fasttemplate.Template
-		var writter *bufio.Writer
 		if cmd.Flags().Changed("format") {
 			t, err := fasttemplate.NewTemplate(format, "{", "}")
 			if err != nil {
 				return err
 			}
 			template = t
-			writter = bufio.NewWriter(os.Stdout)
 		}
 
 		ranges := make([]*Range, len(args))
@@ -106,7 +105,7 @@ rm -vrf bad-directory | field -s -- -1
 			ranges[i] = r
 		}
 
-		const size = 16777216 // 16MiB
+		const size = 500 * (2 << 19) // 500 MiB
 		reader := bufio.NewReader(os.Stdin)
 
 		buf := bytes.NewBuffer(nil)
@@ -120,16 +119,19 @@ rm -vrf bad-directory | field -s -- -1
 				return err
 			}
 
+			if buf.Len()+len(b) > size {
+				return fmt.Errorf("line is too big")
+			}
+
 			if prefixed {
-				if buf.Len() > size {
-					return errors.New("line is too big")
-				}
 				buf.Write(b)
 				continue
 			}
 
-			b = buf.Bytes()
-			buf.Reset()
+			if buf.Len() > 0 {
+				b = buf.Bytes()
+				buf.Reset()
+			}
 
 			var fields []string
 			if shell {
@@ -154,7 +156,11 @@ rm -vrf bad-directory | field -s -- -1
 				if ignoreEmpty && len(selected) == 0 {
 					continue
 				}
-				fmt.Println(strings.Join(selected, " "))
+
+				fprintlnStr(writter, selected)
+				if err := writter.Flush(); err != nil {
+					return err
+				}
 				continue
 			}
 
@@ -163,15 +169,10 @@ rm -vrf bad-directory | field -s -- -1
 				if err != nil {
 					return 0, err
 				}
-				return fmt.Fprint(w, strings.Join(r.Select(fields), " "))
+				return fprintlnStr(w, r.Select(fields))
 			}
 
 			if _, err := template.ExecuteFunc(writter, selector); err != nil {
-				slog.Error("Failed execute format template", "error", err)
-				continue
-			}
-
-			if _, err := writter.WriteString("\n"); err != nil {
 				slog.Error("Failed execute format template", "error", err)
 				continue
 			}
@@ -183,4 +184,27 @@ rm -vrf bad-directory | field -s -- -1
 
 		return nil
 	},
+}
+
+func fprintlnStr(w io.Writer, values []string) (int, error) {
+	if len(values) == 0 {
+		return w.Write([]byte{'\n'})
+	}
+	var written int
+	for i, str := range values {
+		if i > 0 {
+			n, err := w.Write([]byte{' '})
+			if err != nil {
+				return written + n, err
+			}
+			written += n
+		}
+		n, err := io.WriteString(w, str)
+		if err != nil {
+			return written + n, err
+		}
+		written += n
+	}
+	n, err := w.Write([]byte{'\n'})
+	return written + n, err
 }
